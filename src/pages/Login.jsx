@@ -42,7 +42,9 @@ function Login() {
 
         const role = getRoleFromToken(data.token);
         localStorage.setItem("role", role);
-        localStorage.setItem("studentName", email);
+        // localStorage.setItem("studentName", email);
+      localStorage.setItem("studentName", data.studentName);
+        
 
         // ⚡ INSTANT NAVIGATION (NO DELAY)
         if (role === "ADMIN") {

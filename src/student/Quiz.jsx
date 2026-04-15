@@ -1,49 +1,45 @@
 import { useEffect, useState, useRef } from "react";
 import BASE_URL from "../api/api";
 import { getAuthHeader } from "../utils/auth";
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-
+import { useParams, useNavigate } from "react-router-dom";
 
 function Quiz() {
+  const { testId } = useParams();
+  const navigate = useNavigate();
+
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [current, setCurrent] = useState(0);
   const [timeLeft, setTimeLeft] = useState(300);
-  const timerRef = useRef(null);
-  const navigate = useNavigate();
-  const { category } = useParams();
   const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-    if (!category) return; // ✅ IMPORTANT
+  const timerRef = useRef(null);
 
-    fetch(`${BASE_URL}/questions/category/${category}`, {
-      headers: getAuthHeader()
+  // ✅ LOAD QUESTIONS
+  useEffect(() => {
+    fetch(`${BASE_URL}/questions/test/${testId}`, {
+      headers: getAuthHeader(),
     })
-      .then(res => {
-        if (!res.ok) throw new Error("API failed");
-        return res.json();
-      })
-      .then(data => {
+      .then(res => res.text())   // 🔥 FIX
+      .then(text => {
+        const data = text ? JSON.parse(text) : [];
         setQuestions(data);
 
-        const initialAnswers = {};
+        const initial = {};
         data.forEach(q => {
-          initialAnswers[q.id] = null;
+          initial[q.id] = null;
         });
-        setAnswers(initialAnswers);
-      })
-      .catch(err => console.error(err));
+        setAnswers(initial);
+      });
+  }, [testId]);
 
-  }, [category]); // ✅ ADD THIS
-
+  // ✅ TIMER
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timerRef.current);
-          submit();
+          submitQuiz();
           return 0;
         }
         return prev - 1;
@@ -53,6 +49,7 @@ function Quiz() {
     return () => clearInterval(timerRef.current);
   }, []);
 
+  // ✅ SAVE START TIME
   useEffect(() => {
     localStorage.setItem("startTime", new Date().toISOString());
   }, []);
@@ -61,7 +58,8 @@ function Quiz() {
     setAnswers(prev => ({ ...prev, [id]: option }));
   };
 
-  const submit = async () => {
+  // ✅ SUBMIT
+  const submitQuiz = async () => {
     if (submitted) return;
     setSubmitted(true);
 
@@ -77,18 +75,19 @@ function Quiz() {
         body: JSON.stringify({
           answers,
           startTime: localStorage.getItem("startTime"),
-          category   // ✅ ADD THIS
+          testId,
         }),
       });
 
       const data = await res.json();
 
-
-      localStorage.removeItem("startTime");
       localStorage.setItem("result", JSON.stringify(data));
+      localStorage.setItem("testId", testId);
+      localStorage.removeItem("startTime");
 
       navigate("/result");
-    } catch (err) {
+
+    } catch {
       alert("❌ Submission failed");
       setSubmitted(false);
     }
@@ -102,45 +101,39 @@ function Quiz() {
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-100 p-6">
 
       {/* TOP BAR */}
-      <div className="max-w-4xl mx-auto flex justify-between items-center mb-6">
+      <div className="max-w-4xl mx-auto flex justify-between mb-6">
         <h2 className="text-xl font-bold">📝 Quiz</h2>
-        <div className="flex gap-4 items-center">
-          <span className="font-medium">
-            ⏱ {timeLeft}s
-          </span>
-          <span className="text-sm bg-blue-100 px-3 py-1 rounded-full">
-            Answered: {answeredCount}/{questions.length}
-          </span>
+
+        <div className="flex gap-4">
+          <span>⏱ {timeLeft}s</span>
+          <span>Answered: {answeredCount}/{questions.length}</span>
         </div>
       </div>
 
-      {/* QUESTION CARD */}
-      <div className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+      {/* QUESTION */}
+      <div className="max-w-4xl mx-auto bg-white p-5 rounded-xl shadow">
 
         {q && (
           <>
-            <h3 className="text-lg font-semibold mb-4">
+            <h3 className="font-semibold mb-3">
               Q{current + 1}. {q.question}
             </h3>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {["A", "B", "C", "D"].map(opt => (
                 <label
                   key={opt}
-                  className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition 
-                    ${answers[q.id] === opt
-                      ? "bg-blue-100 border-blue-500"
-                      : "hover:bg-gray-100"
-                    }`}
+                  className={`block p-2 border rounded cursor-pointer
+                    ${answers[q.id] === opt ? "bg-blue-100 border-blue-500" : ""}
+                  `}
                 >
                   <input
                     type="radio"
-                    name={`question-${q.id}`}
                     checked={answers[q.id] === opt}
                     onChange={() => handleAnswer(q.id, opt)}
                   />
-                  <span>
-                    <b>{opt}.</b> {q[`option${opt}`]}
+                  <span className="ml-2">
+                    {opt}. {q[`option${opt}`]}
                   </span>
                 </label>
               ))}
@@ -148,31 +141,33 @@ function Quiz() {
           </>
         )}
 
-        {/* NAVIGATION */}
-        <div className="flex justify-between mt-6">
+        {/* BUTTONS */}
+        <div className="flex justify-between mt-4">
+
           <button
-            onClick={() => setCurrent(prev => prev - 1)}
             disabled={current === 0}
-            className="bg-gray-300 px-4 py-2 rounded-lg disabled:opacity-50"
+            onClick={() => setCurrent(c => c - 1)}
+            className="bg-gray-300 px-4 py-1 rounded"
           >
-            ⬅ Prev
+            Prev
           </button>
 
           {current === questions.length - 1 ? (
             <button
-              onClick={submit}
-              className="bg-green-500 text-white px-5 py-2 rounded-lg hover:bg-green-600"
+              onClick={submitQuiz}
+              className="bg-green-500 text-white px-4 py-1 rounded"
             >
-              Submit ✅
+              Submit
             </button>
           ) : (
             <button
-              onClick={() => setCurrent(prev => prev + 1)}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              onClick={() => setCurrent(c => c + 1)}
+              className="bg-blue-500 text-white px-4 py-1 rounded"
             >
-              Next ➡
+              Next
             </button>
           )}
+
         </div>
       </div>
     </div>

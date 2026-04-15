@@ -2,8 +2,18 @@ import { useEffect, useState } from "react";
 import BASE_URL from "../api/api";
 import { getAuthHeader } from "../utils/auth";
 
+// 🔥 SAFE FETCH
+const safeFetch = async (url, options = {}) => {
+  const res = await fetch(url, options);
+  if (!res.ok) return [];
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+};
+
 export default function AdminQuestions() {
   const [questions, setQuestions] = useState([]);
+  const [tests, setTests] = useState([]);
+
   const [form, setForm] = useState({
     id: null,
     question: "",
@@ -12,64 +22,76 @@ export default function AdminQuestions() {
     optionC: "",
     optionD: "",
     correctAnswer: "",
-    category: "java",
+    testId: ""
   });
 
   const [isEdit, setIsEdit] = useState(false);
 
+
   useEffect(() => {
-    fetch(`${BASE_URL}/questions`, {
-      headers: getAuthHeader(),
-    })
-      .then(res => res.json())
-      .then(setQuestions);
+    safeFetch(`${BASE_URL}/tests`, {
+      headers: getAuthHeader()
+    }).then(setTests);
   }, []);
 
+
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setForm({
+      ...form,
+      [name]: name === "testId" ? Number(value) : value   // 🔥 FIX
+    });
   };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!form.testId) {
+      alert("Select Test first!");
+      return;
+    }
+    const loadQuestions = () => {
+      safeFetch(`${BASE_URL}/questions`, {
+        headers: getAuthHeader()
+      }).then(setQuestions);
+    };
 
     const method = isEdit ? "PUT" : "POST";
     const url = isEdit
       ? `${BASE_URL}/questions/${form.id}`
       : `${BASE_URL}/questions`;
 
+    console.log("FORM:", form);
     fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeader(),
+        ...getAuthHeader()
       },
-      body: JSON.stringify(form),
-    })
-      .then(res => res.json())
-      .then(saved => {
-        if (isEdit) {
-          setQuestions(prev =>
-            prev.map(q => (q.id === saved.id ? saved : q))
-          );
-        } else {
-          setQuestions(prev => [...prev, saved]);
-        }
-        resetForm();
-      });
+      body: JSON.stringify(form)
+    }).then(() => {
+      alert("Saved ✅");
+      resetForm();
+      loadQuestions();
+    });
+
   };
 
   const handleEdit = (q) => {
     setForm(q);
     setIsEdit(true);
-    window.scrollTo({ top: 0, behavior: "smooth" }); // 🔥 smooth UX
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
 
   const handleDelete = (id) => {
     if (!window.confirm("Delete this question?")) return;
 
     fetch(`${BASE_URL}/questions/${id}`, {
       method: "DELETE",
-      headers: getAuthHeader(),
+      headers: getAuthHeader()
     }).then(() => {
       setQuestions(prev => prev.filter(q => q.id !== id));
     });
@@ -84,14 +106,14 @@ export default function AdminQuestions() {
       optionC: "",
       optionD: "",
       correctAnswer: "",
-      category: "java",
+      testId: ""
     });
     setIsEdit(false);
   };
 
   return (
     <div className="bg-gradient-to-br from-gray-100 to-blue-100 p-6">
-      {/* TITLE */}
+
       <h1 className="text-3xl font-bold text-center mb-8">
         📝 Manage Questions
       </h1>
@@ -99,14 +121,15 @@ export default function AdminQuestions() {
       {/* FORM */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-6 rounded-2xl shadow-lg max-w-xl mx-auto space-y-4 border"
+        className="bg-white p-6 rounded-2xl shadow-lg max-w-xl mx-auto space-y-4"
       >
+
         <input
           name="question"
           placeholder="Enter Question"
           value={form.question}
           onChange={handleChange}
-          className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full border p-3 rounded-lg"
           required
         />
 
@@ -117,17 +140,18 @@ export default function AdminQuestions() {
             placeholder={`Option ${opt}`}
             value={form[`option${opt}`]}
             onChange={handleChange}
-            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full border p-3 rounded-lg"
             required
           />
         ))}
 
+        {/* ✅ CORRECT ANSWER FIX */}
         <select
           name="correctAnswer"
           value={form.correctAnswer}
           onChange={handleChange}
-          className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500"
           required
+          className="w-full border p-3 rounded-lg"
         >
           <option value="">Select Correct Answer</option>
           <option value="A">A</option>
@@ -136,8 +160,24 @@ export default function AdminQuestions() {
           <option value="D">D</option>
         </select>
 
+        {/* ✅ TEST DROPDOWN */}
+        <select
+          name="testId"
+          value={form.testId}
+          onChange={handleChange}
+          required
+          className="w-full border p-3 rounded-lg"
+        >
+          <option value="">Select Test</option>
+          {tests.map(t => (
+            <option key={t.id} value={t.id}>
+              {t.testName}
+            </option>
+          ))}
+        </select>
+
         <div className="flex gap-3">
-          <button className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-5 py-2 rounded-lg shadow hover:scale-105 transition">
+          <button className="bg-blue-600 text-white px-5 py-2 rounded-lg">
             {isEdit ? "Update Question" : "Add Question"}
           </button>
 
@@ -151,61 +191,41 @@ export default function AdminQuestions() {
             </button>
           )}
         </div>
+
       </form>
 
       {/* TABLE */}
       <div className="mt-10 max-w-6xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gradient-to-r from-blue-500 to-blue-700 text-white">
+          <thead className="bg-blue-600 text-white">
             <tr>
-              <th className="p-4">#</th>
-              <th className="p-4">Question</th>
-              <th className="p-4">Options</th>
-              <th className="p-4">Correct</th>
-              <th className="p-4">Action</th>
+              <th>#</th>
+              <th>Question</th>
+              <th>Options</th>
+              <th>Correct</th>
             </tr>
           </thead>
 
           <tbody>
             {questions.map((q, i) => (
-              <tr key={q.id} className="border-t hover:bg-gray-50 transition">
-                <td className="p-4">{i + 1}</td>
+              <tr key={q.id} className="border-t">
+                <td>{i + 1}</td>
+                <td>{q.question}</td>
 
-                <td className="p-4 font-medium">{q.question}</td>
-
-                <td className="p-4 text-sm space-y-1">
-                  <p><span className="font-semibold text-blue-600">A:</span> {q.optionA}</p>
-                  <p><span className="font-semibold text-blue-600">B:</span> {q.optionB}</p>
-                  <p><span className="font-semibold text-blue-600">C:</span> {q.optionC}</p>
-                  <p><span className="font-semibold text-blue-600">D:</span> {q.optionD}</p>
+                <td>
+                  A: {q.optionA} <br />
+                  B: {q.optionB} <br />
+                  C: {q.optionC} <br />
+                  D: {q.optionD}
                 </td>
 
-                <td className="p-4">
-                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">
-                    {q.correctAnswer}
-                  </span>
-                </td>
-
-                <td className="p-4 flex gap-2 justify-center">
-                  <button
-                    onClick={() => handleEdit(q)}
-                    className="bg-yellow-400 hover:bg-yellow-500 px-3 py-1 rounded-lg shadow"
-                  >
-                    ✏️
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(q.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg shadow"
-                  >
-                    ❌
-                  </button>
-                </td>
+                <td>{q.correctAnswer}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
     </div>
   );
 }

@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import BASE_URL from "../api/api";
-import { getAuthHeader } from "../utils/auth";
+import { apiGet } from "../utils/apiHelper";
 
 export default function AdminDashboard() {
-  // 🔥 INITIAL DATA FROM CACHE (INSTANT LOAD)
   const [stats, setStats] = useState(() => {
     const cached = localStorage.getItem("adminStats");
     return cached
@@ -22,31 +20,29 @@ export default function AdminDashboard() {
     return cached ? JSON.parse(cached) : [];
   });
 
-  // 🔥 BACKGROUND FETCH (NO DELAY UI)
+
   const loadData = async () => {
     try {
       const [attempts, questions, avg, topper, recentData] = await Promise.all([
-        fetch(`${BASE_URL}/result/admin/analytics`, { headers: getAuthHeader() }).then(r => r.json()),
-        fetch(`${BASE_URL}/questions`, { headers: getAuthHeader() }).then(r => r.json()),
-        fetch(`${BASE_URL}/result/admin/avg-score`, { headers: getAuthHeader() }).then(r => r.json()),
-        fetch(`${BASE_URL}/result/admin/topper`, { headers: getAuthHeader() }).then(r => r.json()),
-        fetch(`${BASE_URL}/result/admin/recent`, { headers: getAuthHeader() }).then(r => r.json()),
+        apiGet("/result/admin/analytics"),
+        apiGet("/questions"),
+        apiGet("/result/admin/avg-score"),
+        apiGet("/result/admin/topper"),
+        apiGet("/result/admin/recent"),
       ]);
 
       const newStats = {
-        totalAttempts: attempts,
-        totalQuestions: questions.length,
-        avg,
-        topper,
+        totalAttempts: attempts || 0,
+        totalQuestions: (questions || []).length,
+        avg: avg || 0,
+        topper: topper || null,
       };
 
-      // 🔥 UPDATE STATE
       setStats(newStats);
-      setRecent(recentData);
+      setRecent(recentData || []);
 
-      // 🔥 SAVE CACHE
       localStorage.setItem("adminStats", JSON.stringify(newStats));
-      localStorage.setItem("adminRecent", JSON.stringify(recentData));
+      localStorage.setItem("adminRecent", JSON.stringify(recentData || []));
 
     } catch (err) {
       console.error("Dashboard Error:", err);
@@ -144,13 +140,22 @@ export default function AdminDashboard() {
       </div>
 
       {/* BUTTON */}
-      <div className="text-center mt-10">
+      <div className="text-center mt-6 flex gap-4 justify-center">
+
+        <Link
+          to="/admin/tests"
+          className="bg-green-600 text-white px-6 py-3 rounded-xl shadow hover:bg-green-700"
+        >
+          🧪 Manage Tests
+        </Link>
+
         <Link
           to="/admin/questions"
-          className="bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700"
         >
           ➡ Manage Questions
         </Link>
+
       </div>
     </div>
   );
@@ -168,6 +173,7 @@ function Card({ title, value, color, icon }) {
 
 /* DATE FORMAT */
 function formatDate(dateStr) {
+  if (!dateStr) return "-"; // 🔥 add this
   const d = new Date(dateStr);
   return d.toLocaleDateString("en-IN");
 }

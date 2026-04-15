@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 function Result() {
-  const result = JSON.parse(localStorage.getItem("result"));
+  const result = JSON.parse(localStorage.getItem("result") || "{}");
 
   if (!result) {
     return (
@@ -23,16 +23,16 @@ function Result() {
     percentage >= 80
       ? "text-green-500"
       : percentage >= 50
-      ? "text-yellow-500"
-      : "text-red-500";
+        ? "text-yellow-500"
+        : "text-red-500";
 
   // 🔥 Message
   const message =
     percentage >= 80
       ? "🔥 Excellent Work!"
       : percentage >= 50
-      ? "👍 Good Job!"
-      : "😅 Keep Practicing!";
+        ? "👍 Good Job!"
+        : "😅 Keep Practicing!";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-gray-200 p-4">
@@ -55,13 +55,12 @@ function Result() {
         {/* PROGRESS BAR */}
         <div className="w-full bg-gray-200 rounded-full h-4 mb-4 overflow-hidden">
           <div
-            className={`h-4 rounded-full transition-all duration-500 ${
-              percentage >= 80
-                ? "bg-green-500"
-                : percentage >= 50
+            className={`h-4 rounded-full transition-all duration-500 ${percentage >= 80
+              ? "bg-green-500"
+              : percentage >= 50
                 ? "bg-yellow-400"
                 : "bg-red-400"
-            }`}
+              }`}
             style={{ width: `${percentage}%` }}
           ></div>
         </div>

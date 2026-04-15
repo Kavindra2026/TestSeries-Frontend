@@ -41,10 +41,10 @@ function SidebarLayout() {
       {/* SIDEBAR */}
       <div
         className={`fixed top-0 left-0 h-screen w-64 
-        bg-gradient-to-b from-gray-900 to-gray-800 text-white 
-        flex flex-col justify-between p-5 z-50 shadow-xl
-        transform transition-transform duration-300
-        ${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
+  bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 
+  text-white flex flex-col justify-between p-5 z-50 shadow-2xl
+  transform transition-transform duration-300
+  ${open ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
 
         {/* TOP */}
@@ -54,24 +54,28 @@ function SidebarLayout() {
             <button onClick={() => setOpen(false)}>✖</button>
           </div>
 
-          <h2 className="text-xl font-bold mb-6 hidden md:block">
-            🎯 TestSeries
+          <h2 className="text-xl font-bold mb-6 hidden md:flex items-center gap-2">
+            🎯 <span className="tracking-wide">TestSeries</span>
           </h2>
 
-          <p className="mb-6 text-sm text-gray-300">
-            👋 {name}
-          </p>
-
+          <div className="mb-6 flex items-center gap-3 bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+            <div className="w-11 h-11 transition-transform hover:scale-110 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md flex items-center justify-center font-bold text-lg">
+              {name?.charAt(0)}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">{name}</p>
+              <p className="text-xs text-gray-400">Student</p>
+            </div>
+          </div>
           <nav className="flex flex-col gap-3">
 
             <NavLink
               to="/student"
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `p-2 rounded transition ${
-                  isActive
-                    ? "bg-blue-500 border-l-4 border-white"
-                    : "hover:bg-gray-700"
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
+                  ? "bg-blue-500 border-l-4 border-white"
+                  : "hover:bg-gray-700"
                 }`
               }
             >
@@ -82,10 +86,9 @@ function SidebarLayout() {
               to="/quiz"
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `p-2 rounded transition ${
-                  isActive
-                    ? "bg-blue-500 border-l-4 border-white"
-                    : "hover:bg-gray-700"
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
+                  ? "bg-blue-500 border-l-4 border-white"
+                  : "hover:bg-gray-700"
                 }`
               }
             >
@@ -96,10 +99,9 @@ function SidebarLayout() {
               to="/leaderboard"
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `p-2 rounded transition ${
-                  isActive
-                    ? "bg-blue-500 border-l-4 border-white"
-                    : "hover:bg-gray-700"
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
+                  ? "bg-blue-500 border-l-4 border-white"
+                  : "hover:bg-gray-700"
                 }`
               }
             >
@@ -110,10 +112,9 @@ function SidebarLayout() {
               to="/history"
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `p-2 rounded transition ${
-                  isActive
-                    ? "bg-blue-500 border-l-4 border-white"
-                    : "hover:bg-gray-700"
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
+                  ? "bg-blue-500 border-l-4 border-white"
+                  : "hover:bg-gray-700"
                 }`
               }
             >
@@ -126,14 +127,14 @@ function SidebarLayout() {
         {/* LOGOUT */}
         <button
           onClick={() => setShowModal(true)}
-          className="bg-red-500 px-3 py-2 rounded hover:bg-red-600 w-full transition"
+          className=" bg-red-500/90 backdrop-blur hover:bg-red-600 hover:shadow-red-500/30 px-3 py-3 rounded-xl hover:scale-105 transition w-full shadow-lg font-semibold"
         >
           Logout 🚪
         </button>
       </div>
 
       {/* MAIN */}
-      <div className="flex-1 bg-gray-100 min-h-screen p-6 pt-20 md:pt-6 md:ml-64">
+      <div className="flex-1 bg-gradient-to-br from-gray-100 via-blue-50 to-blue-100 min-h-screen p-6 pt-20 md:pt-6 md:ml-64">
         <Outlet />
       </div>
 
@@ -142,7 +143,7 @@ function SidebarLayout() {
         <div className="fixed inset-0 z-50 flex">
 
           {/* sidebar space */}
-          <div className="w-64 hidden md:block"></div>
+          <div className="w-72 hidden md:block"></div>
 
           {/* overlay */}
           <div

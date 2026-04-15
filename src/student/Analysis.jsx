@@ -7,7 +7,7 @@ function Analysis() {
 
   useEffect(() => {
     const answers = JSON.parse(localStorage.getItem("answers"));
-    const category = localStorage.getItem("category");
+    const testId = localStorage.getItem("testId");
 
     fetch(`${BASE_URL}/result/analysis`, {
       method: "POST",
@@ -15,7 +15,7 @@ function Analysis() {
         ...getAuthHeader(),
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ answers, category }),
+      body: JSON.stringify({ answers, testId }),
     })
       .then((res) => res.json())
       .then(setData);

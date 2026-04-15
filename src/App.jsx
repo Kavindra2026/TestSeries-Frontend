@@ -19,6 +19,7 @@ import SidebarLayout from "./layout/SidebarLayout";
 import AdminSidebarLayout from "./layout/AdminSidebarLayout";
 import QuizList from "./student/QuizList";
 import QuizDetail from "./student/QuizDetail";
+import AdminTests from "./admin/AdminTests";
 
 function App() {
   return (
@@ -34,14 +35,12 @@ function App() {
         <Route element={<SidebarLayout />}>
           {/* STUDENT */}
           <Route path="/student" element={<StudentDashboard />} />
-          {/* ✅ LIST */}
+
           <Route path="/quiz" element={<QuizList />} />
+          <Route path="/quiz/:testId" element={<QuizDetail />} />
 
-          {/* ✅ DETAIL */}
-          <Route path="/quiz/:category" element={<QuizDetail />} />
 
-          {/* ✅ START QUIZ */}
-          <Route path="/quiz/:category/start" element={<Quiz />} />
+          <Route path="/quiz/:testId/start" element={<Quiz />} />
           <Route path="/result" element={<Result />} />
           <Route path="/analysis" element={<Analysis />} />
           <Route path="/history" element={<History />} />
@@ -52,6 +51,7 @@ function App() {
         <Route element={<AdminSidebarLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/questions" element={<AdminQuestions />} />
+          <Route path="/admin/tests" element={<AdminTests />} />
         </Route>
 
 
