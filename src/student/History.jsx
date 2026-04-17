@@ -63,33 +63,35 @@ export default function History() {
             return (
               <div
                 key={index}
-                className="bg-white p-5 rounded-xl shadow-md hover:shadow-xl hover:scale-[1.01] transition"
+                className="bg-white p-5 rounded-2xl shadow-md border border-gray-100 
+             hover:shadow-xl transition duration-300"
               >
 
                 {/* HEADER */}
-                <div className="flex justify-between items-center mb-2">
+                <div className="flex justify-between items-start mb-3">
 
                   <div>
-                    <span className="text-sm text-gray-500 block">
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
                       🕒 {formatDate(item.submittedAt)}
-                    </span>
+                    </p>
 
-                    {/* 🔥 Attempt number */}
-                    <span className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-400 mt-1">
                       Attempt #{history.length - index}
-                    </span>
+                    </p>
                   </div>
 
-                  <span className={`font-bold text-lg ${item.score >= 0 ? "text-green-600" : "text-red-500"
-                    }`}>
+                  {/* SCORE BADGE */}
+                  <div className={`px-3 py-1 rounded-full text-sm font-semibold
+      ${item.score >= 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}
+    `}>
                     {item.score}
-                  </span>
+                  </div>
                 </div>
 
                 {/* PROGRESS BAR */}
-                <div className="w-full bg-gray-200 h-3 rounded-full mb-3">
+                <div className="w-full bg-gray-200 h-2 rounded-full mb-4 overflow-hidden">
                   <div
-                    className={`h-3 rounded-full transition-all duration-500 ${percentage >= 80
+                    className={`h-2 rounded-full transition-all duration-500 ${percentage >= 80
                         ? "bg-green-500"
                         : percentage >= 50
                           ? "bg-yellow-400"
@@ -100,26 +102,35 @@ export default function History() {
                 </div>
 
                 {/* STATS */}
-                <div className="flex justify-between text-sm items-center">
+                <div className="grid grid-cols-4 gap-2 text-center text-sm">
 
-                  <span className="text-green-600">
-                    ✅ {item.correctAnswers}
-                  </span>
+                  <div className="bg-green-50 rounded-lg py-2">
+                    <p className="text-green-600 font-semibold">
+                      ✅ {item.correctAnswers}
+                    </p>
+                  </div>
 
-                  <span className="text-red-500">
-                    ❌ {item.wrongAnswers}
-                  </span>
+                  <div className="bg-red-50 rounded-lg py-2">
+                    <p className="text-red-500 font-semibold">
+                      ❌ {item.wrongAnswers}
+                    </p>
+                  </div>
 
-                  <span className="font-medium">
-                    📊 {percentage}%
-                  </span>
+                  <div className="bg-blue-50 rounded-lg py-2">
+                    <p className="font-medium">
+                      📊 {percentage}%
+                    </p>
+                  </div>
 
-                  <span className="text-sm font-semibold text-blue-600">
-                    {label}
-                  </span>
+                  <div className="bg-purple-50 rounded-lg py-2">
+                    <p className="text-blue-600 font-semibold">
+                      {label}
+                    </p>
+                  </div>
+
                 </div>
-
               </div>
+              
             );
           })}
 

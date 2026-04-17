@@ -103,7 +103,13 @@ function QuizDetail() {
         {/* BUTTON */}
         <button
           disabled={!allowed}
-          onClick={() => navigate(`/quiz/${testId}/start`)}
+
+          onClick={() =>
+            navigate(`/quiz/${testId}/start`, {
+              state: { timeLimit: test.timeLimit * 60 } // ✅ FIX
+            })
+          }
+
           className={`w-full py-2 rounded-lg font-medium relative overflow-hidden
             transition-all duration-300
             ${allowed

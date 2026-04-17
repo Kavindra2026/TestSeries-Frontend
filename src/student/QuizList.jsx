@@ -69,9 +69,9 @@ function QuizList() {
               <button
                 onClick={() => navigate(`/quiz/${test.id}`)}
                 className="w-full mt-2 bg-gradient-to-r from-blue-500 to-indigo-600 
-                           text-white py-2 rounded-lg font-medium 
-                           opacity-0 group-hover:opacity-100 
-                           transition duration-300 hover:scale-[1.02]"
+             text-white py-2 rounded-lg font-medium 
+             opacity-0 group-hover:opacity-100 
+             transition duration-300 hover:scale-[1.02]"
               >
                 Start Quiz →
               </button>
